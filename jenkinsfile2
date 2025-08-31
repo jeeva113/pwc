@@ -1,0 +1,68 @@
+pipeline {
+    agent any 
+    
+    environment {
+        registry = 'jeeva1306'
+        image_name= 'myapp'
+        image_tag= "${env.BUILD_NUMBER}"
+        docker_cred_id= 'dockerhub-creds'
+        k8s_manifest_path= 'k8s'
+        kubectl_path= '/usr/local/bin/kubectl'
+    }
+
+    stages {
+
+        stage ('checkout git') {
+            steps {
+                git branch: 'master', url: 'https://github.com/jeeva113/gittest', credentialsId: 'github-creds'
+            }
+        }
+
+        stage ('build docker image') {
+            steps {
+                script {
+                    sh "docker build -t ${registry}/${image_name}:${image_tag} ."
+                }
+            }
+        }
+
+        stage ('run tests') {
+            steps {
+                sh '''
+                echo "running tests..."
+                node -v
+                '''
+            }
+        }
+
+        stage ('push docker image') {
+            steps {
+                script {
+                    withDockerRegistry([credentialsId: "${docker_cred_id}", url: "https://index.docker.io/v1/"]) {
+                        sh "docker tag ${registry}/${image_name}:${image_tag} ${registry}/${image_name}:${image_tag}"
+                        sh "docker push ${registry}/${image_name}:${image_tag}"
+                        }
+                    
+                }
+            }
+        }
+
+        stage ('change k8s') {
+            steps {
+                sh "sed -i 's#${registry}/${image_name}:.*#${registry}/${image_name}:${image_tag}#g' ${k8s_manifest_path}/deployment.yaml"
+            }
+        }
+
+        stage ('deployment in eks') {
+            steps {
+                withAWS(credentials: 'aws-eks-creds', region: 'us-east-1') {
+                    sh """
+                    aws eks --region us-east-1 update-kubeconfig --name=eks
+                    kubectl apply -f ${k8s_manifest_path}/deployment.yaml
+                    kubectl apply -f ${k8s_manifest_path}/service.yaml
+                    """
+                }
+            }
+        }
+    }
+}
