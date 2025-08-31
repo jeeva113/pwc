@@ -1,5 +1,5 @@
 pipeline {
-    agent any 
+    agent { label 'pwc-interview-test' }  // <- runs on your agent node
     
     environment {
         registry = 'jeeva1306'
@@ -41,8 +41,7 @@ pipeline {
                     withDockerRegistry([credentialsId: "${docker_cred_id}", url: "https://index.docker.io/v1/"]) {
                         sh "docker tag ${registry}/${image_name}:${image_tag} ${registry}/${image_name}:${image_tag}"
                         sh "docker push ${registry}/${image_name}:${image_tag}"
-                        }
-                    
+                    }
                 }
             }
         }
@@ -66,5 +65,3 @@ pipeline {
         }
     }
 }
-
-
