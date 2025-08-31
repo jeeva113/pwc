@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'pwc-interview-test' }  // <- runs on your agent node
     
     environment {
         registry = 'jeeva1306'
@@ -65,4 +65,5 @@ pipeline {
         }
     }
 }
+
 
