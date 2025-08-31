@@ -14,7 +14,7 @@ pipeline {
 
         stage ('checkout git') {
             steps {
-                git branch: 'master', url: 'https://github.com/jeeva113/gittest', credentialsId: 'github-creds'
+                git branch: 'main', url: 'https://github.com/jeeva113/pwc', credentialsId: 'github-creds'
             }
         }
 
@@ -55,7 +55,7 @@ pipeline {
 
         stage ('deployment in eks') {
             steps {
-                withAWS(credentials: 'aws-eks-creds', region: 'us-east-1') {
+                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
                     sh """
                     aws eks --region us-east-1 update-kubeconfig --name=eks
                     kubectl apply -f ${k8s_manifest_path}/deployment.yaml
@@ -66,3 +66,4 @@ pipeline {
         }
     }
 }
+
