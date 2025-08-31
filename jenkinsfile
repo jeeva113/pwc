@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         registry = 'jeeva1306'
-        image_name= 'myapp'
+        image_name= 'pwcapp'
         image_tag= "${env.BUILD_NUMBER}"
         docker_cred_id= 'dockerhub-creds'
         k8s_manifest_path= 'k8s'
@@ -66,4 +66,5 @@ pipeline {
         }
     }
 }
+
 
